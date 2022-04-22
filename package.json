@@ -1,0 +1,32 @@
+{
+  "name": "export-to-module-exports",
+  "version": "0.1.0",
+  "description": "transfer export statement to module.exports expression",
+  "main": "export-to-module-exports.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "export",
+    "transfer",
+    "module",
+    "exports"
+  ],
+  "author": "fwg",
+  "license": "ISC",
+  "dependencies": {
+    "falafel": ">=2.0.0"
+  },
+  "devDependencies": {},
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adf0001/export-to-module-exports.git"
+  },
+  "bugs": {
+    "url": "https://github.com/adf0001/export-to-module-exports/issues"
+  },
+  "homepage": "https://github.com/adf0001/export-to-module-exports#readme"
+}
