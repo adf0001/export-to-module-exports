@@ -142,7 +142,7 @@ module.exports = {
 				'//export * from "module-name";\n' +
 				'var _export_1_= require("module-name");\n' +
 				'//transfer export\n' +
-				'for(var i in _export_1_){if(i!=="default")exports[i]=_export_1_[i]};') &&
+				'for(var i in _export_1_){exports[i]=_export_1_[i]};') &&
 
 			cmp('export\n' +
 				'*/*from*/from"module-name"/*"mmm"*/;//special spaces',
@@ -150,7 +150,7 @@ module.exports = {
 				'//export\\n */*from*/from"module-name"/*"mmm"*/;\n' +
 				'var _export_1_= require("module-name");//special spaces\n' +
 				'//transfer export\n' +
-				'for(var i in _export_1_){if(i!=="default")exports[i]=_export_1_[i]};') &&
+				'for(var i in _export_1_){exports[i]=_export_1_[i]};') &&
 
 			cmp('export * as name1 from "module-name";',
 				'\n' +
@@ -195,12 +195,119 @@ module.exports = {
 		));
 	},
 
-	"sample file": function (done) {
-		if (typeof window !== "undefined") throw "disable for browser";
-		var fs = require("fs");
+	"options.defaultKey": function (done) {
+		//if (typeof window !==/=== "undefined") throw "disable for browser/nodejs";
 
-		var fn = __dirname + "/sample/sample.js";
-		var txt = fs.readFileSync(fn);
+		function cmp(source, expect) {
+			var s = export_to_module_exports(source,
+				{ sourceComment: true, debugInfo: true, defaultKey: "default" }).toString();
+			if (s === expect) return true;
+			console.error("compare fail, source: " + source);
+			console.log("expect: " + expect);
+			console.log("result: " + s);
+			return false;
+		}
+
+		done(!(
+
+			cmp('export default 4+1;',
+				'\n//export default \n' +
+				'var _export_1_= 4+1;\n' +
+				'//transfer export\n' +
+				'exports.default= _export_1_;') &&
+
+			cmp('export default function(){};',
+				'\n//export default \n' +
+				'var _export_1_= function(){};\n' +
+				'//transfer export\n' +
+				'exports.default= _export_1_;') &&
+
+			cmp('export default class{};',
+				'\n//export default \n' +
+				'var _export_1_= class{};\n' +
+				'//transfer export\n' +
+				'exports.default= _export_1_;') &&
+
+			cmp('export default function*(){};',
+				'\n//export default \n' +
+				'var _export_1_= function*(){};\n' +
+				'//transfer export\n' +
+				'exports.default= _export_1_;') &&
+
+			cmp('export default function func1(){};',
+				'\n//export default \n' +
+				'function func1(){};\n' +
+				'//transfer export\n' +
+				'exports.default= func1;') &&
+
+			cmp('export default class cls1{};',
+				'\n//export default \n' +
+				'class cls1{};\n' +
+				'//transfer export\n' +
+				'exports.default= cls1;') &&
+
+			cmp('export default function * func1(){};',
+				'\n//export default \n' +
+				'function * func1(){};\n' +
+				'//transfer export\n' +
+				'exports.default= func1;') &&
+
+			cmp('var name1={}, name2; export { name1 as default, name2 };',
+				'var name1={}, name2; \n' +
+				'//export { name1 as default, name2 };\n' +
+				'\n' +
+				'//transfer export\n' +
+				'exports.default= name1;\n' +
+				'exports.name2= name2;') &&
+
+			cmp('export * from "module-name";',
+				'\n' +
+				'//export * from "module-name";\n' +
+				'var _export_1_= require("module-name");\n' +
+				'//transfer export\n' +
+				'for(var i in _export_1_){if(i!=="default")exports[i]=_export_1_[i]};') &&
+
+			cmp('export\n' +
+				'*/*from*/from"module-name"/*"mmm"*/;//special spaces',
+				'\n' +
+				'//export\\n */*from*/from"module-name"/*"mmm"*/;\n' +
+				'var _export_1_= require("module-name");//special spaces\n' +
+				'//transfer export\n' +
+				'for(var i in _export_1_){if(i!=="default")exports[i]=_export_1_[i]};') &&
+
+			cmp('export { default, name1 } from "module-name";',
+				'\n' +
+				'//export { default, name1 } from "module-name";\n' +
+				'var _export_1_= require("module-name");\n' +
+				'//transfer export\n' +
+				'exports.default= _export_1_.default;\n' +
+				'exports.name1= _export_1_.name1;') &&
+
+			cmp('export { default as DefaultExport, name1 as exp1 } from "module-name";',
+				'\n' +
+				'//export { default as DefaultExport, name1 as exp1 } from "module-name";\n' +
+				'var _export_1_= require("module-name");\n' +
+				'//transfer export\n' +
+				'exports.DefaultExport= _export_1_.default;\n' +
+				'exports.exp1= _export_1_.name1;') &&
+
+			true
+		));
+	},
+
+	"sample file": function (done) {
+		//if (typeof window !== "undefined") throw "disable for browser";
+		var fn = __dirname + "/sample/sample.js", txt;
+		try {
+			var fs = require("fs");
+			txt = fs.readFileSync(fn);
+		}
+		catch (ex) {
+			var request = new XMLHttpRequest();
+			request.open('GET', 'sample/sample.js', false);
+			request.send(null);
+			if (request.status === 200) txt = request.responseText;
+		}
 
 		console.log("===========================");
 		var rsl = export_to_module_exports(txt, { debugInfo: true, sourceComment: true });
@@ -211,14 +318,23 @@ module.exports = {
 		done(false);
 	},
 	"sample file / falafel callback": function (done) {
-		if (typeof window !== "undefined") throw "disable for browser";
-		var fs = require("fs");
+		//if (typeof window !== "undefined") throw "disable for browser";
 
-		var fn = __dirname + "/sample/sample.js";
-		var txt = fs.readFileSync(fn);
+		var fn = __dirname + "/sample/sample.js", txt;
+		try {
+			var fs = require("fs");
+			txt = fs.readFileSync(fn);
+		}
+		catch (ex) {
+			var request = new XMLHttpRequest();
+			request.open('GET', 'sample/sample.js', false);
+			request.send(null);
+			if (request.status === 200) txt = request.responseText;
+		}
 
 		if (export_to_module_exports.fastCheck(txt)) {
-			var cbo = export_to_module_exports.falafelCallback(txt, { debugInfo: true, sourceComment: false });
+			var cbo = export_to_module_exports.falafelCallback(txt,
+				{ debugInfo: true, sourceComment: false, defaultKey: "default" });
 
 			console.log("===========================");
 			var rsl = falafel(txt, { sourceType: 'module', ecmaVersion: 99 },

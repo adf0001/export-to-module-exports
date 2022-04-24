@@ -108,6 +108,8 @@ var falafelCallback = function (source, options) {
 	var aExport = [], aModuleExport = [];
 	var seedObject = {};
 
+	var defaultKey = options && options.defaultKey;
+
 	return {
 		node: function (node) {
 			var itemSource, subType, items, i, imax, nm, nm2;
@@ -137,8 +139,19 @@ var falafelCallback = function (source, options) {
 								nm2 = items[i].local.name;
 
 								if (nm2 === "default") {
-									if (nm === "default") aModuleExport.push(varName);
-									else { aExport.push("exports." + nm + "= " + varName); }
+									if (nm === "default") {
+										if (defaultKey) {
+											aExport.push("exports." + defaultKey + "= " +
+												varName + "." + defaultKey);
+										}
+										else {
+											aModuleExport.push(varName);
+										}
+									}
+									else {
+										aExport.push("exports." + nm + "= " +
+											varName + (defaultKey ? ("." + defaultKey) : ""));
+									}
 								}
 								else { aExport.push("exports." + nm + "= " + varName + "." + nm2); }
 							}
@@ -160,7 +173,10 @@ var falafelCallback = function (source, options) {
 								nm = items[i].exported.name;
 								nm2 = items[i].local.name;
 
-								if (nm === "default") { aModuleExport.push(nm2); }
+								if (nm === "default") {
+									if (defaultKey) { aExport.push("exports." + defaultKey + "= " + nm2); }
+									else { aModuleExport.push(nm2); }
+								}
 								else { aExport.push("exports." + nm + "= " + nm2); }
 							}
 
@@ -241,7 +257,8 @@ var falafelCallback = function (source, options) {
 						);
 					}
 
-					aModuleExport.push(nm);
+					if (defaultKey) { aExport.push("exports." + defaultKey + "= " + nm); }
+					else { aModuleExport.push(nm); }
 
 					break;
 				case 'ExportAllDeclaration':
@@ -258,7 +275,11 @@ var falafelCallback = function (source, options) {
 						//export * from …; // does not set the default export
 
 						nm = exportVarName(source, seedObject);
-						aExport.push('for(var i in ' + nm + '){if(i!=="default")exports[i]=' + nm + '[i]}');
+						aExport.push(
+							'for(var i in ' + nm + '){' +
+							(defaultKey ? ('if(i!=="' + defaultKey + '")') : '') +
+							'exports[i]=' + nm + '[i]}'
+						);
 					}
 					node.update(formatSourceComment(itemSource, options) +
 						"var " + nm + "= require(" + moduleName[1] + ");"
