@@ -98,25 +98,18 @@ function exportVarName(source, seedObject) {
 	return sid;
 }
 
-/*
-options:
-	.debugInfo
-		show debug information
-	.sourceComment
-		add source comment
-	.defaultKey
-		default is empty, and the default export is same as name-space export, such as in node.js;
-		it can be appointed a string key,
-			such as "default" like that in babel, then the default export is `require("module").default`;
-*/
-function transfer(source, options) {
-	if (!regExport.test(source)) return source;		//check keyword 'export' before calling falafel
+//return boolean
+var fastCheck = function (source) {
+	return regExport.test(source);
+}
 
+//return callback object { node: function(node), final: function(result) }
+var falafelCallback = function (source, options) {
 	var aExport = [], aModuleExport = [];
 	var seedObject = {};
 
-	var resultSource = falafel(source, falafelOptions,
-		function (node) {
+	return {
+		node: function (node) {
 			var itemSource, subType, items, i, imax, nm, nm2;
 
 			switch (node.type) {
@@ -277,20 +270,47 @@ function transfer(source, options) {
 			}
 
 			if (options && options.debugInfo) { console.log("match line: " + itemSource); }
-		}
-	);
-	if (resultSource instanceof Error) return resultSource;
+		},
 
-	if (options && options.sourceComment && (aModuleExport.length > 0 || aExport.length))
-		resultSource += "\n//transfer export";
+		final: function (result) {
+			if (!result || (result instanceof Error)) return result;
 
-	if (aModuleExport.length > 0) resultSource += "\nmodule.exports= exports= " +
-		aModuleExport[aModuleExport.length - 1] + ";";		//only the last one
-	if (aExport.length > 0) resultSource += "\n" + aExport.join(";\n") + ";";
+			if (options && options.sourceComment && (aModuleExport.length > 0 || aExport.length))
+				result += "\n//transfer export";
 
-	return resultSource;
+			if (aModuleExport.length > 0) result += "\nmodule.exports= exports= " +
+				aModuleExport[aModuleExport.length - 1] + ";";		//only the last one
+			if (aExport.length > 0) result += "\n" + aExport.join(";\n") + ";";
+
+			return result;
+		},
+	};
+}
+
+/*
+options:
+	.debugInfo
+		show debug information
+	.sourceComment
+		add source comment
+	.defaultKey
+		default is empty, and the default export is same as name-space export, such as in node.js;
+		it can be appointed a string key,
+			such as "default" like that in babel, then the default export is `require("module").default`;
+*/
+function transfer(source, options) {
+	if (!fastCheck(source)) return source;
+
+	var cbo = falafelCallback(source, options);
+
+	var resultSource = falafel(source, falafelOptions, cbo.node);
+
+	return cbo.final(resultSource);
 }
 
 //module
 
-module.exports = transfer;
+module.exports = exports = transfer;
+
+exports.fastCheck = fastCheck;
+exports.falafelCallback = falafelCallback;

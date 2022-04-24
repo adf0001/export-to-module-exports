@@ -1,6 +1,7 @@
 
 //global variable, for html page, refer tpsvr @ npm.
 export_to_module_exports = require("../export-to-module-exports.js");
+falafel = require('falafel');
 
 module.exports = {
 
@@ -143,7 +144,7 @@ module.exports = {
 				'//transfer export\n' +
 				'for(var i in _export_1_){if(i!=="default")exports[i]=_export_1_[i]};') &&
 
-			cmp('export\n'+
+			cmp('export\n' +
 				'*/*from*/from"module-name"/*"mmm"*/;//special spaces',
 				'\n' +
 				'//export\\n */*from*/from"module-name"/*"mmm"*/;\n' +
@@ -192,6 +193,48 @@ module.exports = {
 
 			true
 		));
+	},
+
+	"sample file": function (done) {
+		if (typeof window !== "undefined") throw "disable for browser";
+		var fs = require("fs");
+
+		var fn = __dirname + "/sample/sample.js";
+		var txt = fs.readFileSync(fn);
+
+		console.log("===========================");
+		var rsl = export_to_module_exports(txt, { debugInfo: true, sourceComment: true });
+
+		console.log("---------------------------");
+		console.log(rsl);
+
+		done(false);
+	},
+	"sample file / falafel callback": function (done) {
+		if (typeof window !== "undefined") throw "disable for browser";
+		var fs = require("fs");
+
+		var fn = __dirname + "/sample/sample.js";
+		var txt = fs.readFileSync(fn);
+
+		if (export_to_module_exports.fastCheck(txt)) {
+			var cbo = export_to_module_exports.falafelCallback(txt, { debugInfo: true, sourceComment: false });
+
+			console.log("===========================");
+			var rsl = falafel(txt, { sourceType: 'module', ecmaVersion: 99 },
+				function (node) {
+					cbo.node(node);
+				}
+			);
+			rsl = cbo.final(rsl);
+
+			console.log("---------------------------");
+			console.log(rsl);
+
+		}
+
+
+		done(false);
 	},
 
 };
