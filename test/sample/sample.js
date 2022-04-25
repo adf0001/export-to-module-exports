@@ -17,7 +17,7 @@ export const { name1ee, name2: bar } = o;
 var arr = [1, 2];
 export const [name1f, name2e] = arr;
 
-export default 4 + 1;		//accept only 1 default, manually toggle this line;
+export default { a : 4 + 1 };		//accept only 1 default, manually toggle this line;
 
 //export default function () { };		//accept only 1 default, manually toggle this line;
 
