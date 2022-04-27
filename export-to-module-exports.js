@@ -335,3 +335,4 @@ module.exports = exports = transfer;
 
 exports.fastCheck = fastCheck;
 exports.falafelCallback = falafelCallback;
+exports.falafelOptions = Object.assign({}, falafelOptions);

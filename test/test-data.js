@@ -337,7 +337,7 @@ module.exports = {
 				{ debugInfo: true, sourceComment: false, defaultKey: "default" });
 
 			console.log("===========================");
-			var rsl = falafel(txt, { sourceType: 'module', ecmaVersion: 99 },
+			var rsl = falafel(txt, export_to_module_exports.falafelOptions,
 				function (node) {
 					cbo.node(node);
 				}
