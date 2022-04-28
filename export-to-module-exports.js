@@ -89,12 +89,12 @@ var defaultFalafelOptions = { sourceType: 'module', ecmaVersion: ECMA_VERSION };
 
 var regFromModule = /\bfrom\s*([\'\"][^\'\"]+[\'\"])[\s;]*$/;
 
-//seed: { id }
-function exportVarName(source, seedObject) {
-	if (!seedObject.id) seedObject.id = 1;
+//textSeedObject: { id, text }
+function exportVarName(textSeedObject) {
+	if (!textSeedObject.id) textSeedObject.id = 1;
 
 	var sid;
-	while (source.indexOf(sid = "_export_" + (seedObject.id++) + "_") >= 0) { }
+	while (textSeedObject.text.indexOf(sid = "_export_" + (textSeedObject.id++) + "_") >= 0) { }
 	return sid;
 }
 
@@ -108,7 +108,7 @@ var regLineHead = /[\r\n]$/;
 //return callback object { node: function(node), final: function(result) }
 var falafelCallback = function (source, options) {
 	var aExport = [], aModuleExport = [];
-	var seedObject = {};
+	var textSeedObject = { text: source };
 
 	var defaultKey = options && options.defaultKey;
 
@@ -134,7 +134,7 @@ var falafelCallback = function (source, options) {
 							//export { default, … } from …;
 							//	export { default as DefaultExport, … } from …;  //from example
 
-							var varName = exportVarName(source, seedObject);
+							var varName = exportVarName(textSeedObject);
 
 							items = node.specifiers;
 							imax = items.length;
@@ -257,7 +257,7 @@ var falafelCallback = function (source, options) {
 						//export default expression;
 						//export default function (…) { … } // also class, function*
 
-						nm = exportVarName(source, seedObject);
+						nm = exportVarName(textSeedObject);
 						node.update(formatSourceComment(itemSource.slice(0, idx), options, lineHead) +
 							"var " + nm + "= " + itemSource.slice(idx)
 						);
@@ -282,7 +282,7 @@ var falafelCallback = function (source, options) {
 					else {
 						//export * from …; // does not set the default export
 
-						nm = exportVarName(source, seedObject);
+						nm = exportVarName(textSeedObject);
 						aExport.push(
 							'for(var i in ' + nm + '){' +
 							(defaultKey ? ('if(i!=="' + defaultKey + '")') : '') +

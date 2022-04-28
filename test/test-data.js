@@ -94,11 +94,11 @@ module.exports = {
 				'//transfer export\n' +
 				'module.exports= exports= _export_1_;') &&
 
-			cmp('export default function(){};',
+			cmp('export default function(){/*test var name _export_1_*/};',
 				'//export default \n' +
-				'var _export_1_= function(){};\n' +
+				'var _export_2_= function(){/*test var name _export_1_*/};\n' +
 				'//transfer export\n' +
-				'module.exports= exports= _export_1_;') &&
+				'module.exports= exports= _export_2_;') &&
 
 			cmp('export default class{};',
 				'//export default \n' +
