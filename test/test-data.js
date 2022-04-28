@@ -23,7 +23,7 @@ module.exports = {
 					.falafelOptions
 						options passed to falafel, default { sourceType: 'module', ecmaVersion: 99 };
 			*/
-			var s = export_to_module_exports(source, { sourceComment: true, debugInfo: true }).toString();
+			var s = export_to_module_exports(source, { sourceComment: true, debugInfo: true });
 			if (s === expect) return true;
 			console.error("compare fail, source: " + source);
 			console.log("expect: " + expect);
@@ -202,7 +202,7 @@ module.exports = {
 
 		function cmp(source, expect) {
 			var s = export_to_module_exports(source,
-				{ sourceComment: true, debugInfo: true, defaultKey: "default" }).toString();
+				{ sourceComment: true, debugInfo: true, defaultKey: "default" });
 			if (s === expect) return true;
 			console.error("compare fail, source: " + source);
 			console.log("expect: " + expect);
@@ -334,7 +334,13 @@ module.exports = {
 			if (request.status === 200) txt = request.responseText;
 		}
 
+		//.fastCheck(source)		//return boolean
 		if (export_to_module_exports.fastCheck(txt)) {
+
+			/*
+			.falafelCallback(source, options)
+			return callback object { node: function(node), final?: function(result) }
+			*/
 			var cbo = export_to_module_exports.falafelCallback(txt,
 				{ debugInfo: true, sourceComment: false, defaultKey: "default" });
 
@@ -344,10 +350,10 @@ module.exports = {
 					cbo.node(node);
 				}
 			);
-			rsl = cbo.final(rsl);
+			if (cbo.final) rsl = cbo.final(rsl);
 
 			console.log("---------------------------");
-			console.log(rsl);
+			console.log(rsl.toString());
 
 		}
 

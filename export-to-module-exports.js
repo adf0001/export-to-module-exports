@@ -328,7 +328,7 @@ function transfer(source, options) {
 
 	var resultSource = falafel(source, (options && options.falafelOptions) || defaultFalafelOptions, cbo.node);
 
-	return cbo.final(resultSource);
+	return cbo.final(resultSource).toString();
 }
 
 //module
