@@ -62,7 +62,7 @@ function cmp(source, expect) {
 				it can be appointed a string key,
 					such as "default" like that in babel, then the default export is `require("module").default`;
 	*/
-	var s = export_to_module_exports(source, { sourceComment: true, debugInfo: true }).toString();
+	var s = export_to_module_exports(source, { sourceComment: true, debugInfo: true });
 
 	return (s === expect);
 }
@@ -74,13 +74,12 @@ cmp('export let name1, name2=2;',
 	'exports.name2= name2;')
 
 cmp('export default function(){};',
-	'\n//export default \n' +
+	'//export default \n' +
 	'var _export_1_= function(){};\n' +
 	'//transfer export\n' +
 	'module.exports= exports= _export_1_;')
 
 cmp('export { name1, name2 } from "module-name";',
-	'\n' +
 	'//export { name1, name2 } from "module-name";\n' +
 	'var _export_1_= require("module-name");\n' +
 	'//transfer export\n' +

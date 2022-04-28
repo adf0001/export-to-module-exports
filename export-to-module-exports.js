@@ -4,10 +4,10 @@
 var acorn = require('acorn');
 var falafel = require('falafel');
 
-function formatSourceComment(source, options) {
+function formatSourceComment(source, options, lineHead) {
 	if (!options || !options.sourceComment) return "";
 
-	return "\n//" + source.replace(/[\r\n]+/g, "\\n ") + "\n";
+	return (lineHead ? "" : "\n") + "//" + source.replace(/[\r\n]+/g, "\\n ") + "\n";
 }
 
 var ECMA_VERSION = 99;	//to avoid SyntaxError by dynamic import-calling `import()`, or other future error.
@@ -103,6 +103,8 @@ var fastCheck = function (source) {
 	return regExport.test(source);
 }
 
+var regLineHead = /[\r\n]$/;
+
 //return callback object { node: function(node), final: function(result) }
 var falafelCallback = function (source, options) {
 	var aExport = [], aModuleExport = [];
@@ -112,13 +114,15 @@ var falafelCallback = function (source, options) {
 
 	return {
 		node: function (node) {
-			var itemSource, subType, items, i, imax, nm, nm2;
+			var itemSource, subType, items, i, imax, nm, nm2, lineHead;
 
 			switch (node.type) {
 				case 'ExportNamedDeclaration':
 					//console.log(node);
 					itemSource = node.source();
 					subType = node.declaration && node.declaration.type;
+
+					lineHead = node.start ? regLineHead.test(source.slice(node.start - 1, node.start)) : true;
 
 					if (!subType) {
 						var moduleName = removeComment(itemSource).match(regFromModule);
@@ -157,7 +161,7 @@ var falafelCallback = function (source, options) {
 							}
 
 							node.update(
-								formatSourceComment(itemSource, options) +
+								formatSourceComment(itemSource, options, lineHead) +
 								"var " + varName + "= require(" + moduleName[1] + ");"
 							);
 						}
@@ -180,7 +184,7 @@ var falafelCallback = function (source, options) {
 								else { aExport.push("exports." + nm + "= " + nm2); }
 							}
 
-							node.update(formatSourceComment(itemSource, options));	//remove all by comment
+							node.update(formatSourceComment(itemSource, options, lineHead));	//remove all by comment
 						}
 
 						break;	//skip header processing
@@ -238,12 +242,14 @@ var falafelCallback = function (source, options) {
 					itemSource = node.source();
 					var idx = node.declaration.start - node.start;
 
+					lineHead = node.start ? regLineHead.test(source.slice(node.start - 1, node.start)) : true;
+
 					if (node.declaration.id) {
 						//export default function name1(…) { … } // also class, function*
 
 						nm = node.declaration.id.name;
 						node.update(
-							formatSourceComment(itemSource.slice(0, idx), options) +
+							formatSourceComment(itemSource.slice(0, idx), options, lineHead) +
 							itemSource.slice(idx)
 						);
 					}
@@ -252,7 +258,7 @@ var falafelCallback = function (source, options) {
 						//export default function (…) { … } // also class, function*
 
 						nm = exportVarName(source, seedObject);
-						node.update(formatSourceComment(itemSource.slice(0, idx), options) +
+						node.update(formatSourceComment(itemSource.slice(0, idx), options, lineHead) +
 							"var " + nm + "= " + itemSource.slice(idx)
 						);
 					}
@@ -263,6 +269,8 @@ var falafelCallback = function (source, options) {
 					break;
 				case 'ExportAllDeclaration':
 					itemSource = node.source();
+
+					lineHead = node.start ? regLineHead.test(source.slice(node.start - 1, node.start)) : true;
 
 					var moduleName = removeComment(itemSource).match(regFromModule);
 					if (node.exported) {
@@ -281,7 +289,7 @@ var falafelCallback = function (source, options) {
 							'exports[i]=' + nm + '[i]}'
 						);
 					}
-					node.update(formatSourceComment(itemSource, options) +
+					node.update(formatSourceComment(itemSource, options, lineHead) +
 						"var " + nm + "= require(" + moduleName[1] + ");"
 					);
 
