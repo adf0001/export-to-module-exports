@@ -85,7 +85,7 @@ export { default, … } from …;
 */
 
 var regExport = /\bexport\b/;
-var falafelOptions = { sourceType: 'module', ecmaVersion: ECMA_VERSION };
+var defaultFalafelOptions = { sourceType: 'module', ecmaVersion: ECMA_VERSION };
 
 var regFromModule = /\bfrom\s*([\'\"][^\'\"]+[\'\"])[\s;]*$/;
 
@@ -318,13 +318,15 @@ options:
 		default is empty, and the default export is same as name-space export, such as in node.js;
 		it can be appointed a string key,
 			such as "default" like that in babel, then the default export is `require("module").default`;
+	.falafelOptions
+		options passed to falafel, default { sourceType: 'module', ecmaVersion: 99 };
 */
 function transfer(source, options) {
 	if (!fastCheck(source)) return source;
 
 	var cbo = falafelCallback(source, options);
 
-	var resultSource = falafel(source, falafelOptions, cbo.node);
+	var resultSource = falafel(source, (options && options.falafelOptions) || defaultFalafelOptions, cbo.node);
 
 	return cbo.final(resultSource);
 }
@@ -335,4 +337,4 @@ module.exports = exports = transfer;
 
 exports.fastCheck = fastCheck;
 exports.falafelCallback = falafelCallback;
-exports.falafelOptions = Object.assign({}, falafelOptions);
+exports.defaultFalafelOptions = Object.assign({}, defaultFalafelOptions);

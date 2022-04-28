@@ -20,6 +20,8 @@ module.exports = {
 						default is empty, and the default export is same as name-space export, such as in node.js;
 						it can be appointed a string key,
 							such as "default" like that in babel, then the default export is `require("module").default`;
+					.falafelOptions
+						options passed to falafel, default { sourceType: 'module', ecmaVersion: 99 };
 			*/
 			var s = export_to_module_exports(source, { sourceComment: true, debugInfo: true }).toString();
 			if (s === expect) return true;
@@ -337,7 +339,7 @@ module.exports = {
 				{ debugInfo: true, sourceComment: false, defaultKey: "default" });
 
 			console.log("===========================");
-			var rsl = falafel(txt, export_to_module_exports.falafelOptions,
+			var rsl = falafel(txt, export_to_module_exports.defaultFalafelOptions,
 				function (node) {
 					cbo.node(node);
 				}
