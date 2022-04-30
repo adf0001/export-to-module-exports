@@ -104,6 +104,7 @@ var fastCheck = function (source) {
 }
 
 var regLineHead = /[\r\n]$/;
+var regLineHeadMore = /(\r\r|\n\n|[\r\n]{3,})$/;
 
 //return callback object { node: function(node), final: function(result) }
 var falafelCallback = function (source, options) {
@@ -304,8 +305,10 @@ var falafelCallback = function (source, options) {
 		final: function (result) {
 			if (!result || (result instanceof Error)) return result;
 
+			result = result.toString();
+
 			if (options && options.sourceComment && (aModuleExport.length > 0 || aExport.length))
-				result += "\n//transfer export";
+				result += (regLineHeadMore.test(result) ? "" : "\n") + "//transfer export";
 
 			if (aModuleExport.length > 0) result += "\nmodule.exports= exports= " +
 				aModuleExport[aModuleExport.length - 1] + ";";		//only the last one

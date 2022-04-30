@@ -157,6 +157,25 @@ module.exports = {
 				'//transfer export\n' +
 				'exports.name1= name1;') &&
 
+			cmp('export * as name1 from "module-name";\n',
+				'//export * as name1 from "module-name";\n' +
+				'var name1= require("module-name");\n' +
+				'\n' +
+				'//transfer export\n' +
+				'exports.name1= name1;') &&
+			cmp('export * as name1 from "module-name";\n\n',
+				'//export * as name1 from "module-name";\n' +
+				'var name1= require("module-name");\n' +
+				'\n' +
+				'//transfer export\n' +
+				'exports.name1= name1;') &&
+			cmp('export * as name1 from "module-name";\n\n\n',
+				'//export * as name1 from "module-name";\n' +
+				'var name1= require("module-name");\n' +
+				'\n\n' +
+				'//transfer export\n' +
+				'exports.name1= name1;') &&
+
 			cmp('export { name1, name2 } from "module-name";',
 				'//export { name1, name2 } from "module-name";\n' +
 				'var _export_1_= require("module-name");\n' +
