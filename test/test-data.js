@@ -68,6 +68,22 @@ module.exports = {
 				'exports.name1= name1;\n' +
 				'exports.name2= name2;') &&
 
+			cmp('var name1, name2; export { name1, name2 };\n',
+				'var name1, name2; \n' +
+				'//export { name1, name2 };\n' +
+				'\n' +
+				'//transfer export\n' +
+				'exports.name1= name1;\n' +
+				'exports.name2= name2;') &&
+
+			cmp('var name1, name2; export { name1, name2 };\nvar b=1;',
+				'var name1, name2; \n' +
+				'//export { name1, name2 };\n' +
+				'var b=1;\n' +
+				'//transfer export\n' +
+				'exports.name1= name1;\n' +
+				'exports.name2= name2;') &&
+
 			cmp('var variable1, variable2; export { variable1 as name1, variable2 as name2 };',
 				'var variable1, variable2; \n' +
 				'//export { variable1 as name1, variable2 as name2 };\n' +

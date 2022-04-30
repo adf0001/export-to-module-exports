@@ -4,10 +4,10 @@
 var acorn = require('acorn');
 var falafel = require('falafel');
 
-function formatSourceComment(source, options, lineHead) {
+function formatSourceComment(source, options, lineHead, lineTail) {
 	if (!options || !options.sourceComment) return "";
 
-	return (lineHead ? "" : "\n") + "//" + source.replace(/[\r\n]+/g, "\\n ") + "\n";
+	return (lineHead ? "" : "\n") + "//" + source.replace(/[\r\n]+/g, "\\n ") + (lineTail ? "" : "\n");
 }
 
 var ECMA_VERSION = 99;	//to avoid SyntaxError by dynamic import-calling `import()`, or other future error.
@@ -106,6 +106,8 @@ var fastCheck = function (source) {
 var regLineHead = /[\r\n]$/;
 var regLineHeadMore = /(\r\r|\n\n|[\r\n]{3,})$/;
 
+var regLineTail = /^[\r\n]/;
+
 //return callback object { node: function(node), final: function(result) }
 var falafelCallback = function (source, options) {
 	var aExport = [], aModuleExport = [];
@@ -115,7 +117,7 @@ var falafelCallback = function (source, options) {
 
 	return {
 		node: function (node) {
-			var itemSource, subType, items, i, imax, nm, nm2, lineHead;
+			var itemSource, subType, items, i, imax, nm, nm2, lineHead, lineTail;
 
 			switch (node.type) {
 				case 'ExportNamedDeclaration':
@@ -185,7 +187,9 @@ var falafelCallback = function (source, options) {
 								else { aExport.push("exports." + nm + "= " + nm2); }
 							}
 
-							node.update(formatSourceComment(itemSource, options, lineHead));	//remove all by comment
+							lineTail = node.end ? regLineTail.test(source.slice(node.end, node.end + 1)) : false;
+							
+							node.update(formatSourceComment(itemSource, options, lineHead, lineTail));	//remove all by comment
 						}
 
 						break;	//skip header processing
